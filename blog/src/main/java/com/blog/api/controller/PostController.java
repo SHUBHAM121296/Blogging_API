@@ -33,6 +33,7 @@ import com.blog.api.payload.PostResponse;
 import com.blog.api.security.JwtTokenHelper;
 import com.blog.api.service.FileService;
 import com.blog.api.service.PostService;
+import com.blog.api.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -49,11 +50,21 @@ public class PostController {
 	
 //	@Autowired
 //	private JwtTokenHelper jwtTokenHelper;
+	
+	@Autowired
+	private UserService userService;
 
-	@PostMapping(value="/user/{userId}/category/{categoryId}/post",consumes={"application/json"})
-	public ResponseEntity<PostDto> createPost(@Valid @RequestBody PostDto postDto,@PathVariable int userId,@PathVariable int categoryId){
-		PostDto createdPost=postService.createPost(postDto, categoryId, userId);
-		return new ResponseEntity<PostDto>(createdPost,HttpStatus.CREATED);
+	@PostMapping(value="/user/category/{categoryId}/post",consumes={"application/json"})
+	public ResponseEntity<PostDto> createPost(
+			@Valid @RequestBody PostDto postDto,
+			@PathVariable int categoryId,
+			HttpServletRequest request
+		){
+			String requestToken = request.getHeader("Authorization");
+			String username=userService.getUserFromToken(requestToken);
+			int userId=userService.getUserIdfromUserName(username);
+			PostDto createdPost=postService.createPost(postDto, categoryId, userId);
+			return new ResponseEntity<PostDto>(createdPost,HttpStatus.CREATED);
 	}
 	
 	

@@ -17,6 +17,7 @@ import com.blog.api.payload.ApiResponse;
 import com.blog.api.payload.CommentDto;
 import com.blog.api.security.JwtTokenHelper;
 import com.blog.api.service.CommentService;
+import com.blog.api.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -26,14 +27,20 @@ public class CommentController {
 	private CommentService commentService;
 	
 	@Autowired
+	private UserService userService ;
+	
+	@Autowired
 	private JwtTokenHelper jwtTokenHelper;
 	
-	@PostMapping("/post/{postId}/comments/{userId}")
+	@PostMapping("/post/{postId}/comments")
 	public ResponseEntity<CommentDto> createComment(
 			@RequestBody CommentDto commentDto ,
 			@PathVariable Integer postId ,
-			@PathVariable Integer userId
+			HttpServletRequest request
 			){
+		String requestToken = request.getHeader("Authorization");
+		String username=userService.getUserFromToken(requestToken);
+		int userId=userService.getUserIdfromUserName(username);
 		CommentDto createComment = commentService.createComment(commentDto,postId,userId);
 		return new ResponseEntity<CommentDto>(createComment,HttpStatus.CREATED);
 	}
@@ -44,8 +51,7 @@ public class CommentController {
 			HttpServletRequest request
 			){
 		String requestToken = request.getHeader("Authorization");
-		String token = requestToken.substring(7);
-		String username = this.jwtTokenHelper.getUserNameFromToken(token);
+		String username=userService.getUserFromToken(requestToken);
 		System.out.println("I am user from the token in post : "+username);
 		commentService.deleteComment(commentId,username);
 		ApiResponse response=new ApiResponse("Comment Successfully deleted" , true);

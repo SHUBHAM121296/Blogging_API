@@ -16,6 +16,7 @@ import com.blog.api.exception.ResourceNotFoundException;
 import com.blog.api.payload.UserDto;
 import com.blog.api.repository.RoleRepo;
 import com.blog.api.repository.UserRepo;
+import com.blog.api.security.JwtTokenHelper;
 import com.blog.api.service.UserService;
 
 @Service
@@ -32,6 +33,9 @@ public class UserServieImpl implements UserService {
 	
 	@Autowired
 	private RoleRepo roleRepo;
+	
+	@Autowired
+	private JwtTokenHelper jwtTokenHelper;
 	
 	@Override
 	public UserDto createUser(UserDto user) {
@@ -104,6 +108,19 @@ public class UserServieImpl implements UserService {
 		user.getUser_roles().add(role);
 		User savedUser=userRepository.save(user);
 		return modelmapper.map(savedUser,UserDto.class);
+	}
+
+	@Override
+	public String getUserFromToken(String requestToken) {
+		String token = requestToken.substring(7);
+		String username = this.jwtTokenHelper.getUserNameFromToken(token);
+		return username;
+	}
+
+	@Override
+	public Integer getUserIdfromUserName(String userName) {
+		User user=userRepository.findByEmail(userName).orElseThrow(()-> new ResourceNotFoundException("User", "User name "+ userName, 0));
+		return user.getUserId();
 	}
 
 }

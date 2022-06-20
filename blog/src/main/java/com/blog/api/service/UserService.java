@@ -17,4 +17,8 @@ public interface UserService {
 	
 	UserDto registerUser(UserDto userDto);
 	
+	String getUserFromToken(String token);
+	
+	Integer getUserIdfromUserName(String userName);
+	
 }
