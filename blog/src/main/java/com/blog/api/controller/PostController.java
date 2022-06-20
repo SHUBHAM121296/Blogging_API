@@ -1,6 +1,5 @@
 package com.blog.api.controller;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -27,12 +26,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.blog.api.config.AppConstants;
+import com.blog.api.entity.ReviewPost;
 import com.blog.api.payload.ApiResponse;
+import com.blog.api.payload.PostApiResponse;
 import com.blog.api.payload.PostDto;
 import com.blog.api.payload.PostResponse;
-import com.blog.api.security.JwtTokenHelper;
+import com.blog.api.payload.ReviewPostDto;
 import com.blog.api.service.FileService;
 import com.blog.api.service.PostService;
+import com.blog.api.service.ReviewService;
 import com.blog.api.service.UserService;
 
 @RestController
@@ -48,24 +50,38 @@ public class PostController {
 	@Value("${project.image}")
 	private String path;
 	
-//	@Autowired
-//	private JwtTokenHelper jwtTokenHelper;
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private ReviewService reviewService;
 
 	@PostMapping(value="/user/category/{categoryId}/post",consumes={"application/json"})
-	public ResponseEntity<PostDto> createPost(
-			@Valid @RequestBody PostDto postDto,
+	public ResponseEntity<PostApiResponse> createPost(
+			@Valid @RequestBody ReviewPostDto reviewPostDto,
 			@PathVariable int categoryId,
 			HttpServletRequest request
 		){
-			String requestToken = request.getHeader("Authorization");
-			String username=userService.getUserFromToken(requestToken);
-			int userId=userService.getUserIdfromUserName(username);
-			PostDto createdPost=postService.createPost(postDto, categoryId, userId);
-			return new ResponseEntity<PostDto>(createdPost,HttpStatus.CREATED);
+		String requestToken = request.getHeader("Authorization");
+		String username=userService.getUserFromToken(requestToken);
+		int userId=userService.getUserIdfromUserName(username);
+		ReviewPost createdPost=reviewService.createPost(reviewPostDto, categoryId, userId);
+		return new ResponseEntity<PostApiResponse>(new PostApiResponse("Post Submitted for Approval",createdPost),HttpStatus.CREATED);
 	}
+	
+//	@PostMapping(value="/user/category/{categoryId}/post",consumes={"application/json"})
+//	public ResponseEntity<PostDto> createPost(
+//			@Valid @RequestBody PostDto postDto,
+//			@PathVariable int categoryId,
+//			HttpServletRequest request
+//		){
+//			String requestToken = request.getHeader("Authorization");
+//			String username=userService.getUserFromToken(requestToken);
+//			int userId=userService.getUserIdfromUserName(username);
+//			PostDto createdPost=postService.createPost(postDto, categoryId, userId);
+//			return new ResponseEntity<PostDto>(createdPost,HttpStatus.CREATED);
+//	}
 	
 	
 	@GetMapping("/posts/{postId}")
@@ -82,10 +98,6 @@ public class PostController {
 			@RequestParam(value="sortDir",defaultValue=AppConstants.SORT_DIR,required=false) String sortDir 
 //			HttpServletRequest request
 			){
-//		String requestToken = request.getHeader("Authorization");
-//		String token = requestToken.substring(7);
-//		String username = this.jwtTokenHelper.getUserNameFromToken(token);
-//		System.out.println("I am user from the token in post : "+username);
 		PostResponse postResponse=postService.getAllPost(pageNumber,pageSize,sortBy,sortDir);
 		return new ResponseEntity<PostResponse >(postResponse,HttpStatus.OK);
 	}

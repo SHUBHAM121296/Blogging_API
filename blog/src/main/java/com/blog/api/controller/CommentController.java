@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.blog.api.entity.Comment;
 import com.blog.api.payload.ApiResponse;
 import com.blog.api.payload.CommentDto;
-import com.blog.api.security.JwtTokenHelper;
 import com.blog.api.service.CommentService;
 import com.blog.api.service.UserService;
 
@@ -29,8 +27,6 @@ public class CommentController {
 	@Autowired
 	private UserService userService ;
 	
-	@Autowired
-	private JwtTokenHelper jwtTokenHelper;
 	
 	@PostMapping("/post/{postId}/comments")
 	public ResponseEntity<CommentDto> createComment(
